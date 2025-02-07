@@ -1,66 +1,87 @@
-import React, { useState } from 'react';
+'use client';
 
-import { Input } from "@/components/ui/input"
-import { Button } from "@/components/ui/button"
+import React from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { toast } from 'sonner';
 
-const FeedbackPage = () => {
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [message, setMessage] = useState("");
+const feedbackSchema = z.object({
+  name: z.string().min(2, 'Name must be at least 2 characters'),
+  email: z.string().email('Invalid email address'),
+  message: z.string().min(10, 'Message must be at least 10 characters')
+});
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    // Handle form submission here
-    console.log({ name, email, message });
+type FeedbackForm = z.infer<typeof feedbackSchema>;
+
+export default function FeedbackPage() {
+  const { register, handleSubmit, reset, formState: { errors, isSubmitting } } = useForm<FeedbackForm>({
+    resolver: zodResolver(feedbackSchema)
+  });
+
+  const onSubmit = async (data: FeedbackForm) => {
+    try {
+      // TODO: Implement your feedback submission logic here
+      console.log('Feedback data:', data);
+      toast.success('Feedback submitted successfully!');
+      reset();
+    } catch (error) {
+      console.error('Error submitting feedback:', error);
+      toast.error('Failed to submit feedback. Please try again.');
+    }
   };
 
   return (
-    <div className="container mx-auto py-10">
-      <h1 className="text-2xl font-bold mb-5">Feedback</h1>
-      <p>Please provide your feedback below:</p>
-      <form onSubmit={handleSubmit}>
-        <div className="mb-4">
-          <label htmlFor="name" className="block text-gray-700 text-sm font-bold mb-2">
-            Name:
-          </label>
+    <div className="container mx-auto px-4 py-8 max-w-2xl">
+      <h1 className="text-3xl font-bold mb-8">Send us your Feedback</h1>
+      
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+        <div>
           <Input
-            type="text"
-            id="name"
-            placeholder="Your name"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+            {...register('name')}
+            placeholder="Your Name"
+            className={errors.name ? 'border-red-500' : ''}
           />
+          {errors.name && (
+            <p className="text-red-500 text-sm mt-1">{errors.name.message}</p>
+          )}
         </div>
-        <div className="mb-4">
-          <label htmlFor="email" className="block text-gray-700 text-sm font-bold mb-2">
-            Email:
-          </label>
+
+        <div>
           <Input
+            {...register('email')}
             type="email"
-            id="email"
-            placeholder="Your email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+            placeholder="Your Email"
+            className={errors.email ? 'border-red-500' : ''}
           />
+          {errors.email && (
+            <p className="text-red-500 text-sm mt-1">{errors.email.message}</p>
+          )}
         </div>
-        <div className="mb-4">
-          <label htmlFor="message" className="block text-gray-700 text-sm font-bold mb-2">
-            Message:
-          </label>
-          <textarea
-            id="message"
-            placeholder="Your message"
-            value={message}
-            onChange={(e) => setMessage(e.target.value)}
-            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+
+        <div>
+          <Textarea
+            {...register('message')}
+            placeholder="Your Message"
+            className={errors.message ? 'border-red-500' : ''}
+            rows={5}
           />
+          {errors.message && (
+            <p className="text-red-500 text-sm mt-1">{errors.message.message}</p>
+          )}
         </div>
-        <Button type="submit">Submit</Button>
+
+        <Button 
+          type="submit" 
+          disabled={isSubmitting}
+          className="w-full"
+        >
+          {isSubmitting ? 'Sending...' : 'Send Feedback'}
+        </Button>
       </form>
     </div>
   );
-};
-
-export default FeedbackPage;
+}
