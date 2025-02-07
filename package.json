@@ -4,9 +4,10 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "bun migrate && next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "migrate": "bun run lib/migrate.ts"
   },
   "dependencies": {
     "@aws-sdk/client-rds-data": "latest",

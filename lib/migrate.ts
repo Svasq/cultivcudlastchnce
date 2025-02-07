@@ -7,15 +7,20 @@ const runMigration = async () => {
     throw new Error("DATABASE_URL is not set")
   }
 
-  const sql = neon(process.env.DATABASE_URL)
-  const db = drizzle(sql)
+  try {
+    const sql = neon(process.env.DATABASE_URL)
+    const db = drizzle(sql)
 
-  console.log("Running migrations...")
-
-  await migrate(db, { migrationsFolder: "drizzle" })
-
-  console.log("Migrations complete!")
+    console.log("Running migrations...")
+    await migrate(db, { migrationsFolder: "drizzle" })
+    console.log("Migrations completed successfully!")
+    
+    process.exit(0)
+  } catch (error) {
+    console.error("Migration failed:", error)
+    process.exit(1)
+  }
 }
 
-runMigration().catch(console.error)
+runMigration()
 
