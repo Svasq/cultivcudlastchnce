@@ -213,9 +213,7 @@ export async function adminLogin(values: z.infer<typeof adminLoginSchema>) {
 
     const cookieStore = cookies();
     const oneWeek = 7 * 24 * 60 * 60 * 1000;
-    cookieStore.set({
-      name: 'admin_session',
-      value: sessionToken,
+    await cookieStore.set('admin_session', sessionToken, {
       expires: new Date(Date.now() + oneWeek),
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
@@ -232,11 +230,6 @@ export async function adminLogin(values: z.infer<typeof adminLoginSchema>) {
 
 export async function adminLogout() {
   const cookieStore = cookies();
-  cookieStore.set({
-    name: 'admin_session',
-    value: '',
-    expires: new Date(0),
-    path: '/',
-  });
+  await cookieStore.delete('admin_session');
   return { success: true };
 }

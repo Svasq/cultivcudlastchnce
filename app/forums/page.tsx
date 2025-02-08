@@ -1,9 +1,11 @@
+"use client";
+
 import { Header } from '../components/Header';
 import { Footer } from '../components/Footer';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "./components/ui/card";
+import { Button } from "./components/ui/button";
+import { Input } from "./components/ui/input";
+import { Textarea } from "./components/ui/textarea";
 import { useState, useEffect } from 'react';
 
 interface Thread {
@@ -18,12 +20,13 @@ interface Thread {
 export default function ForumsPage() {
   const [threads, setThreads] = useState<Thread[]>([]);
   const [newThreadTitle, setNewThreadTitle] = useState('');
+  const [newThreadBody, setNewThreadBody] = useState('');
 
   useEffect(() => {
     fetchThreads();
   }, []);
 
-  const fetchThreads = async () => {
+    const fetchThreads = async () => {
     try {
       const response = await fetch('/api/forums');
       const data = await response.json();
@@ -37,7 +40,7 @@ export default function ForumsPage() {
     }
   };
 
-  const handleCreateThread = async (e: React.FormEvent) => {
+  const handleCreateThread = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     try {
       // Assuming a default authorId for now
@@ -46,11 +49,12 @@ export default function ForumsPage() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ title: newThreadTitle, authorId: 1 }), // Hardcoded authorId
+        body: JSON.stringify({ title: newThreadTitle, body: newThreadBody, authorId: 1 }), // Hardcoded authorId
       });
       if (response.ok) {
         fetchThreads(); // Refresh the thread list
         setNewThreadTitle(''); // Clear the input field
+        setNewThreadBody(''); // Clear the textarea
       } else {
         console.error('Failed to create thread');
       }
@@ -76,6 +80,11 @@ export default function ForumsPage() {
                 value={newThreadTitle}
                 onChange={(e) => setNewThreadTitle(e.target.value)}
               />
+              <Textarea
+                placeholder="Thread body"
+                value={newThreadBody}
+                onChange={(e) => setNewThreadBody(e.target.value)}
+              />
               <Button type="submit">Create Thread</Button>
             </form>
           </CardContent>
@@ -89,8 +98,11 @@ export default function ForumsPage() {
                 <CardTitle>{thread.title}</CardTitle>
               </CardHeader>
               <CardContent>
-                {/* Add more thread details here, like author and date */}
-                <p>Created at: {thread.createdAt}</p>
+                <p>{thread.body}</p>
+                <p className="text-sm text-gray-500">
+                  Created at:{" "}
+                  {new Date(thread.createdAt).toLocaleDateString()}
+                </p>
               </CardContent>
             </Card>
           ))}

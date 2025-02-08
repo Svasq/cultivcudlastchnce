@@ -1,47 +1,13 @@
 import { drizzle } from "drizzle-orm/neon-http"
 import { migrate } from "drizzle-orm/neon-http/migrator"
 import { neon } from "@neondatabase/serverless"
-import * as fs from 'fs'
-import * as path from 'path'
-import * as schema from "./schema"
-import { config } from 'dotenv'
 
-// Load .env.local instead of .env
-config({ path: '.env.local' });
-
-const ensureMigrationDirs = () => {
-  const dirs = ['drizzle', 'drizzle/meta']
-  dirs.forEach(dir => {
-    if (!fs.existsSync(dir)) {
-      fs.mkdirSync(dir, { recursive: true })
-    }
-  })
-
-  const journalPath = 'drizzle/meta/_journal.json'
-  if (!fs.existsSync(journalPath)) {
-    const initialJournal = {
-      version: "5",
-      dialect: "pg",
-      entries: [{
-        idx: 0,
-        version: "5",
-        when: Date.now(),
-        tag: "0000_initial",
-        breakpoints: true
-      }]
-    }
-    fs.writeFileSync(journalPath, JSON.stringify(initialJournal, null, 2))
-  }
+if (!process.env.DATABASE_URL) {
+  throw new Error("DATABASE_URL is not set")
 }
 
 const runMigration = async () => {
-  if (!process.env.DATABASE_URL) {
-    throw new Error("DATABASE_URL is not set")
-  }
-
   try {
-    ensureMigrationDirs()
-
     const sql = neon(process.env.DATABASE_URL)
     const db = drizzle(sql)
 

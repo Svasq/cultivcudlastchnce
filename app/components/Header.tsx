@@ -14,7 +14,6 @@ import { ModeToggle } from "@/components/ui/mode-toggle"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 import { Video, Users, MessageSquare, ShoppingBag, MessageCircle } from "lucide-react"
-
 const navigationItems = [
   {
     name: "Live",
@@ -49,10 +48,10 @@ const navigationItems = [
 ]
 
 export function Header() {
-  const [user, setUser] = useState<{ email: string } | null>(null)
-  const router = useRouter()
-  const pathname = usePathname()
-  const isAuthenticated = false // TODO: Replace with actual auth check
+  const [user, setUser] = useState<{ email: string } | null>(null);
+  const router = useRouter();
+  const pathname = usePathname();
+  const isAuthenticated = false; // TODO: Replace with actual auth check
 
   useEffect(() => {
     const storedUser = localStorage.getItem("user")
@@ -108,10 +107,10 @@ export function Header() {
           {!isAuthenticated ? (
             <>
               <Button variant="ghost" asChild>
-                <Link href="/login">Login</Link>
+                <Link href="/auth/signin">Login</Link>
               </Button>
               <Button asChild>
-                <Link href="/signup">Sign Up</Link>
+                <Link href="/auth/signup">Sign Up</Link>
               </Button>
             </>
           ) : (

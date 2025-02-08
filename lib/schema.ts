@@ -10,6 +10,7 @@ export const members = pgTable("members", {
 export const threads = pgTable("threads", {
   id: serial("id").primaryKey(),
   title: text("title").notNull(),
+  body: text("body").notNull(),
   authorId: integer("author_id").notNull(), // Foreign key to users table (not defined here)
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),

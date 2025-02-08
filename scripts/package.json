@@ -4,6 +4,8 @@
   "private": true,
   "scripts": {
     "seed": "tsx seed-communities.ts",
-    "migrate": "tsx migrate.ts"
+    "migrate": "tsx migrate.ts",
+    "seed-admin": "tsx seed-admin.ts",
+    "create-admin-table": "tsx create-admin-table.ts"
   }
 } 
