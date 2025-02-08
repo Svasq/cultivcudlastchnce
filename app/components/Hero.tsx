@@ -8,7 +8,7 @@ export function Hero() {
         Join our vibrant community of changemakers and make a difference in your local area.
       </p>
       <Button size="lg" variant="secondary" asChild>
-        <a href="/feedback">Get Involved</a>
+        <a href="/auth">Get Involved</a>
       </Button>
     </section>
   )

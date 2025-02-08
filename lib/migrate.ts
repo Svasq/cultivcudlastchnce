@@ -3,6 +3,11 @@ import { migrate } from "drizzle-orm/neon-http/migrator"
 import { neon } from "@neondatabase/serverless"
 import * as fs from 'fs'
 import * as path from 'path'
+import * as schema from "./schema"
+import { config } from 'dotenv'
+
+// Load .env.local instead of .env
+config({ path: '.env.local' });
 
 const ensureMigrationDirs = () => {
   const dirs = ['drizzle', 'drizzle/meta']
@@ -41,12 +46,12 @@ const runMigration = async () => {
     const db = drizzle(sql)
 
     console.log("Running migrations...")
-    await migrate(db, { migrationsFolder: "drizzle" })
+    await migrate(db, { migrationsFolder: "./drizzle" })
     console.log("Migrations completed successfully!")
     
     process.exit(0)
   } catch (error) {
-    console.error("Migration failed:", error)
+    console.error("Error running migrations:", error)
     process.exit(1)
   }
 }

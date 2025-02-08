@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { Toaster } from 'sonner'
 import './globals.css'
+import React from 'react';
 
 export const metadata: Metadata = {
   title: 'Community Website',
@@ -14,8 +15,11 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body>{children}</body>
-      <Toaster position="top-right" />
+      <body>{children}
+        <div suppressHydrationWarning>
+          <Toaster position="top-right" />
+        </div>
+      </body>
     </html>
   )
 }

@@ -6,6 +6,7 @@ import { Header } from "../components/Header"
 import { Footer } from "../components/Footer"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
+import Link from "next/link"
 
 export default function UserDashboard() {
   const [user, setUser] = useState<{ email: string } | null>(null)
@@ -41,6 +42,9 @@ export default function UserDashboard() {
           <CardContent>
             <p className="mb-4">Logged in as: {user.email}</p>
             <Button onClick={handleSignOut}>Sign Out</Button>
+            <Button asChild>
+              <Link href="/my-communities">My Communities</Link>
+            </Button>
           </CardContent>
         </Card>
       </main>
@@ -48,4 +52,3 @@ export default function UserDashboard() {
     </div>
   )
 }
-

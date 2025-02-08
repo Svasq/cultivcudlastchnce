@@ -53,6 +53,16 @@ export function Header() {
                 <NavigationMenuLink className={navigationMenuTriggerStyle()}>Feedback</NavigationMenuLink>
               </Link>
             </NavigationMenuItem>
+            <NavigationMenuItem>
+              <Link href="/forums" legacyBehavior passHref>
+                <NavigationMenuLink className={navigationMenuTriggerStyle()}>Forums</NavigationMenuLink>
+              </Link>
+            </NavigationMenuItem>
+            <NavigationMenuItem>
+              <Link href="/communities" legacyBehavior passHref>
+                <NavigationMenuLink className={navigationMenuTriggerStyle()}>Communities</NavigationMenuLink>
+              </Link>
+            </NavigationMenuItem>
             {user && (
               <NavigationMenuItem>
                 <Link href="/dashboard" legacyBehavior passHref>

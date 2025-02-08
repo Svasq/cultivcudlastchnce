@@ -1,64 +1,94 @@
 import { db } from '@/lib/db';
-import { posts } from '@/lib/schema';
+import { members } from '@/lib/schema';
 import { Header } from "./components/Header"
 import { Footer } from "./components/Footer"
 import { Hero } from "./components/Hero"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
-import { InferModel } from 'drizzle-orm';
-
-type Post = InferModel<typeof posts>;
+import { PlusCircle, MessageSquare, ArrowRight } from 'lucide-react';
+import Link from 'next/link';
+import { toast } from 'sonner';
+import { handleCreatePost } from '@/lib/actions';
 
 export default async function Home() {
-  let postsData: Post[] = [];
-  
-  try {
-    postsData = await db.select().from(posts);
-  } catch (error) {
-    console.error('Error fetching posts:', error);
-  }
-
-  async function handleCreatePost(formData: FormData) {
-    "use server"
-    const title = formData.get("title");
-    const content = formData.get("content");
-    if (typeof title === 'string' && typeof content === 'string') {
-      await db.insert(posts).values({ title, content }).returning({ id: posts.id });
-    }
-  }
-
   return (
     <div className="flex flex-col min-h-screen">
       <Header />
       <Hero />
       <main className="flex-grow container mx-auto px-4 py-12">
-        <section id="create-post" className="mb-16">
-          <h2 className="text-3xl font-bold mb-6">Create a New Post</h2>
-          <form action={handleCreatePost}>
-            <div className="space-y-4">
-              <Input name="title" placeholder="Post Title" required />
-              <Textarea name="content" placeholder="Post Content" required />
-              <Button type="submit">Create Post</Button>
-            </div>
-          </form>
-        </section>
-        <section className="mb-8">
-          <h2 className="text-2xl font-semibold mb-4">Latest Posts</h2>
-          {postsData.length > 0 ? (
-            <div className="grid gap-4">
-              {postsData.map((post) => (
-                <article key={post.id} className="p-4 border rounded-lg">
-                  <h3 className="text-xl font-medium">{post.title}</h3>
-                  <p className="mt-2">{post.content}</p>
-                </article>
-              ))}
-            </div>
-          ) : (
-            <p>No posts available yet.</p>
-          )}
-        </section>
+        <div className="grid md:grid-cols-2 gap-6 max-w-6xl mx-auto">
+          <Card className="md:col-span-1">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <PlusCircle className="w-6 h-6" />
+                Quick Post
+              </CardTitle>
+              <CardDescription>Share a quick thought or update with the community</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <form
+                action={async (formData) => {
+                  "use server"
+                  const result = await handleCreatePost(formData);
+                  if (result?.error) {
+                    toast.error(result.error);
+                  } else if (result?.success) {
+                    toast.success("Post created successfully!");
+                    (document.querySelector('form') as HTMLFormElement)?.reset();
+                  }
+                }}
+                className="space-y-6"
+              >
+                <div className="space-y-2">
+                  <Input 
+                    name="title" 
+                    placeholder="What's on your mind?" 
+                    className="text-lg font-medium"
+                    required 
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Textarea 
+                    name="content" 
+                    placeholder="Tell us more..." 
+                    className="min-h-[120px] resize-none"
+                    required 
+                  />
+                </div>
+                <div className="flex justify-end">
+                  <Button type="submit" size="lg">
+                    Post Update
+                  </Button>
+                </div>
+              </form>
+            </CardContent>
+          </Card>
+
+          <Card className="md:col-span-1 h-fit">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <MessageSquare className="w-6 h-6" />
+                Community Forums
+              </CardTitle>
+              <CardDescription>Join discussions or start your own thread</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="text-center space-y-4">
+                <p className="text-muted-foreground">
+                  Engage with other members in our community forums. Start discussions, ask questions, or share your expertise.
+                </p>
+                <Link href="/forums">
+                  <Button className="w-full group">
+                    Visit Forums
+                    <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
+                  </Button>
+                </Link>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
       </main>
       <Footer />
     </div>
