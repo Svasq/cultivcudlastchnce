@@ -5,12 +5,12 @@
   "type": "module",
   "scripts": {
     "dev": "next dev",
-    "build": "npm run migrate && next build",
+    "build": "bun run migrate && next build",
     "start": "next start",
     "lint": "next lint",
-    "migrate": "npm run migrate-run",
-    "migrate-run": "node lib/migrate.ts",
-    "migrate:local": "dotenv -e .env.local -- npm run migrate-run",
+    "migrate": "bun run migrate-run",
+    "migrate-run": "tsx lib/migrate.ts",
+    "migrate:local": "dotenv -e .env.local -- bun run migrate-run",
     "db:seed": "tsx scripts/seed-communities.ts",
     "db:migrate": "tsx scripts/migrate.ts",
     "db:studio": "drizzle-kit studio"
