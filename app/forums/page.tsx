@@ -25,7 +25,7 @@ export default function ForumsPage() {
       if (Array.isArray(data)) {
         setThreads(data);
       } else {
-        console.error('Data is not an array:', data);
+        setThreads([]);
       }
     } catch (error) {
       console.error('Error fetching threads:', error);

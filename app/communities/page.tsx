@@ -1,6 +1,10 @@
 "use client";
 
 import { useState, useEffect } from 'react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Video } from 'lucide-react';
+import Link from 'next/link';
 
 interface Community {
   id: number;
@@ -30,16 +34,41 @@ export default function CommunitiesPage() {
   };
 
   return (
-    <div>
-      <h1>Communities</h1>
-      <ul>
+    <div className="container py-6 space-y-8">
+      <div className="flex flex-col gap-4">
+        <h1 className="text-4xl font-bold">Communities</h1>
+        <p className="text-muted-foreground">
+          Join existing communities or create your own to connect with like-minded people.
+        </p>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {communities.map((community) => (
-          <li key={community.id}>
-            <h2>{community.name}</h2>
-            <p>{community.bio}</p>
-          </li>
+          <Card key={community.id} className="flex flex-col">
+            <CardHeader>
+              <CardTitle className="flex justify-between items-center">
+                <span className="line-clamp-1">{community.name}</span>
+                <Link href={`/communities/${community.id}/stream`}>
+                  <Button variant="outline" size="sm">
+                    <Video className="w-4 h-4 mr-2" />
+                    Go Live
+                  </Button>
+                </Link>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-muted-foreground line-clamp-3">{community.bio}</p>
+            </CardContent>
+          </Card>
         ))}
-      </ul>
+        {communities.length === 0 && (
+          <div className="text-center">
+            <p className="text-muted-foreground">
+              There are currently no communities. Community streaming allows you to connect with others who share your interests. Create your own community and start streaming!
+            </p>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

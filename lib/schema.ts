@@ -50,3 +50,26 @@ export const communities = pgTable("communities", {
   name: text("name").notNull(),
   bio: text("bio").notNull(),
 });
+
+export const streams = pgTable("streams", {
+  id: serial("id").primaryKey(),
+  title: text("title").notNull(),
+  communityId: integer("community_id").references(() => communities.id),
+  streamKey: text("stream_key").notNull(),
+  status: text("status").notNull().default('inactive'),
+  viewerCount: integer("viewer_count").notNull().default(0),
+  thumbnailUrl: text("thumbnail_url"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const streamChat = pgTable("stream_chat", {
+  id: serial("id").primaryKey(),
+  streamId: integer("stream_id").references(() => streams.id),
+  userId: text("user_id").notNull(),
+  username: text("username").notNull(),
+  message: text("message").notNull(),
+  type: text("type").notNull().default('text'), // text, image, video
+  mediaUrl: text("media_url"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
