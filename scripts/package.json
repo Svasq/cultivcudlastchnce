@@ -1,0 +1,9 @@
+{
+  "name": "community-website-scripts",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "seed": "tsx seed-communities.ts",
+    "migrate": "tsx migrate.ts"
+  }
+} 
