@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { uploadToBlob } from '@/lib/blob';
+import { uploadBlob } from '@/lib/blob';
 
 export async function POST(request: NextRequest) {
   try {
@@ -16,7 +16,7 @@ export async function POST(request: NextRequest) {
     const buffer = Buffer.from(await file.arrayBuffer());
     const filename = `uploads/${Date.now()}-${file.name}`;
 
-    const result = await uploadToBlob(filename, buffer);
+    const result = await uploadBlob(filename, buffer);
 
     if (!result.success) {
       return NextResponse.json(

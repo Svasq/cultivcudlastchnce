@@ -22,11 +22,20 @@ export default async function StreamPage({ params }: { params: { id: string } })
     notFound();
   }
 
+  const liveKitUrl = process.env.LIVEKIT_URL;
+  const liveKitApiKey = process.env.LIVEKIT_API_KEY;
+  const liveKitApiSecret = process.env.LIVEKIT_API_SECRET;
+
   return (
     <div className="container py-6">
       <div className="grid lg:grid-cols-[1fr,400px] gap-6">
         <div className="space-y-4">
-          <VideoPlayer streamKey={stream.streamKey} />
+          <VideoPlayer
+            streamKey={stream.streamKey}
+            liveKitUrl={liveKitUrl}
+            liveKitApiKey={liveKitApiKey}
+            liveKitApiSecret={liveKitApiSecret}
+          />
           <h1 className="text-2xl font-bold">{stream.title}</h1>
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <span>{stream.viewerCount} watching</span>
@@ -39,4 +48,4 @@ export default async function StreamPage({ params }: { params: { id: string } })
       </div>
     </div>
   );
-} 
+}

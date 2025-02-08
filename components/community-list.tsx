@@ -2,7 +2,7 @@
 
 import { useOptimistic } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import type { Community } from '@/lib/schema';
+import { Community } from '@/hooks/useCommunity'; // Verified import statement
 
 interface CommunityListProps {
   initialCommunities: Community[];

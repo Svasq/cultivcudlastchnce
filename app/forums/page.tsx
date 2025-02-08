@@ -1,114 +1,81 @@
 "use client";
 
-import { Header } from '../components/Header';
-import { Footer } from '../components/Footer';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "./components/ui/card";
-import { Button } from "./components/ui/button";
-import { Input } from "./components/ui/input";
-import { Textarea } from "./components/ui/textarea";
-import { useState, useEffect } from 'react';
-
-interface Thread {
-  id: number;
-  title: string;
-  body: string;
-  authorId: number;
-  createdAt: string;
-  updatedAt: string;
-}
+import { useState, useEffect } from "react";
+import { useRouter, usePathname } from "next/navigation";
+import { Button } from "@/components/ui/button";
+import Link from "next/link";
+import { getJWTPayload, type JWTPayload } from "@/lib/auth";
+import ThreadList from "./components/ThreadList";
+import { cn } from "@/lib/utils";
 
 export default function ForumsPage() {
-  const [threads, setThreads] = useState<Thread[]>([]);
-  const [newThreadTitle, setNewThreadTitle] = useState('');
-  const [newThreadBody, setNewThreadBody] = useState('');
+  const [user, setUser] = useState<JWTPayload | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    fetchThreads();
+    async function loadUser() {
+      try {
+        const userData = await getJWTPayload();
+        setUser(userData);
+      } catch (err) {
+        console.error("Error loading user:", err);
+        setError("Failed to load user data");
+      } finally {
+        setLoading(false);
+      }
+    }
+    loadUser();
   }, []);
 
-    const fetchThreads = async () => {
-    try {
-      const response = await fetch('/api/forums');
-      const data = await response.json();
-      if (Array.isArray(data)) {
-        setThreads(data);
-      } else {
-        setThreads([]);
-      }
-    } catch (error) {
-      console.error('Error fetching threads:', error);
-    }
-  };
+  if (loading) {
+    return (
+      <div className="flex min-h-screen flex-col">
+        <div className="container mx-auto py-6">Loading...</div>
+      </div>
+    );
+  }
 
-  const handleCreateThread = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    try {
-      // Assuming a default authorId for now
-      const response = await fetch('/api/forums', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ title: newThreadTitle, body: newThreadBody, authorId: 1 }), // Hardcoded authorId
-      });
-      if (response.ok) {
-        fetchThreads(); // Refresh the thread list
-        setNewThreadTitle(''); // Clear the input field
-        setNewThreadBody(''); // Clear the textarea
-      } else {
-        console.error('Failed to create thread');
-      }
-    } catch (error) {
-      console.error('Error creating thread:', error);
-    }
-  };
+  if (error) {
+    return (
+      <div className="flex min-h-screen flex-col">
+        <div className="container mx-auto py-6">
+          <div className="text-center">
+            <p className="text-red-500 mb-2">{error}</p>
+            <Button onClick={() => window.location.reload()}>
+              Try Again
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="flex flex-col min-h-screen">
-      <Header />
-      <main className="flex-grow container mx-auto px-4 py-12">
-        <h1 className="text-3xl font-bold mb-4">Forums</h1>
-        <Card className="mb-6">
-          <CardHeader>
-            <CardTitle>Create New Thread</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleCreateThread} className="space-y-4">
-              <Input
-                type="text"
-                placeholder="Thread title"
-                value={newThreadTitle}
-                onChange={(e) => setNewThreadTitle(e.target.value)}
-              />
-              <Textarea
-                placeholder="Thread body"
-                value={newThreadBody}
-                onChange={(e) => setNewThreadBody(e.target.value)}
-              />
-              <Button type="submit">Create Thread</Button>
-            </form>
-          </CardContent>
-        </Card>
-
-        <h2 className="text-2xl font-bold mb-4">Threads</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {threads.map((thread) => (
-            <Card key={thread.id}>
-              <CardHeader>
-                <CardTitle>{thread.title}</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p>{thread.body}</p>
-                <p className="text-sm text-gray-500">
-                  Created at:{" "}
-                  {new Date(thread.createdAt).toLocaleDateString()}
-                </p>
-              </CardContent>
-            </Card>
-          ))}
+    <div className="flex min-h-screen flex-col">
+      <div className="container mx-auto py-6">
+        <div className="border-b pb-4 mb-6">
+          <div className="flex items-center justify-between">
+            <h1 className="text-2xl font-semibold">Forum Discussions</h1>
+            {user ? (
+              <Link href="/forums/create" className="inline-block">
+                <Button className="h-9">Create Thread</Button>
+              </Link>
+            ) : (
+              <div className="space-x-2">
+                <Link href="/auth/signin" className="inline-block">
+                  <Button variant="outline" className="h-9">Login</Button>
+                </Link>
+                <Link href="/auth/signup" className="inline-block">
+                  <Button className="h-9">Sign Up</Button>
+                </Link>
+              </div>
+            )}
+          </div>
         </div>
-      </main>
-      <Footer />
+
+        <ThreadList />
+      </div>
     </div>
   );
 }

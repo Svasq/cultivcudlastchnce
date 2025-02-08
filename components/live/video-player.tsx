@@ -2,12 +2,16 @@
 
 import { useEffect, useRef } from 'react';
 import Hls from 'hls.js';
+import { AccessToken } from 'livekit-client';
 
 interface VideoPlayerProps {
   streamKey: string;
+  liveKitUrl?: string;
+  liveKitApiKey?: string;
+  liveKitApiSecret?: string;
 }
 
-export function VideoPlayer({ streamKey }: VideoPlayerProps) {
+export function VideoPlayer({ streamKey, liveKitUrl, liveKitApiKey, liveKitApiSecret }: VideoPlayerProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
@@ -38,7 +42,19 @@ export function VideoPlayer({ streamKey }: VideoPlayerProps) {
         video.play().catch(console.error);
       });
     }
-  }, [streamKey]);
+
+    // Connect to LiveKit if credentials are provided
+    if (liveKitUrl && liveKitApiKey && liveKitApiSecret) {
+      const token = new AccessToken(liveKitApiKey, liveKitApiSecret, {
+        identity: 'user', // Replace with actual user identity if available
+        name: 'User',
+      }).toJwt();
+
+      // You would typically use the token to connect to LiveKit here
+      console.log('Connecting to LiveKit with:', { liveKitUrl, token });
+      // Replace this with your actual LiveKit connection logic
+    }
+  }, [streamKey, liveKitUrl, liveKitApiKey, liveKitApiSecret]);
 
   return (
     <div className="aspect-video relative bg-black rounded-lg overflow-hidden">
@@ -51,4 +67,4 @@ export function VideoPlayer({ streamKey }: VideoPlayerProps) {
       />
     </div>
   );
-} 
+}

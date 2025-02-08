@@ -15,7 +15,7 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   try {
     const { title, body, authorId } = await request.json(); // Assuming request body contains title, body and authorId
-    const newThread = await db.insert(threads).values({ title, body, authorId }).returning();
+    const newThread = await db.insert(threads).values({ title, body, author_id: authorId }).returning();
 
     // TODO: Integrate Blob to trigger real-time updates
 

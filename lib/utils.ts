@@ -1,4 +1,4 @@
-import { clsx, type ClassValue } from "clsx"
+import { type ClassValue, clsx } from "clsx"
 import { twMerge } from "tailwind-merge"
 import { NextResponse } from 'next/server';
 
@@ -40,4 +40,14 @@ export async function downloadFile(url: string, filename?: string) {
     console.error('Download error:', error);
     return false;
   }
+}
+
+export function formatPrice(price: number | string | null | undefined): string {
+  if (!price) return '$0.00'
+  
+  const numericPrice = typeof price === 'string' ? parseFloat(price) : price
+  return new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD',
+  }).format(numericPrice)
 }

@@ -4,9 +4,9 @@ import { streamChat } from '@/lib/schema';
 import { desc, eq } from 'drizzle-orm';
 import { createSSEStream } from '@/lib/utils';
 
-export const runtime = 'edge';
+const runtime = 'edge';
 
-export async function GET(request: Request, { params }: { params: { id: string } }) {
+async function getChat({ params }: { params: { id: string } }) {
   const streamId = parseInt(params.id);
 
   return createSSEStream(async (controller) => {
@@ -17,11 +17,12 @@ export async function GET(request: Request, { params }: { params: { id: string }
     const recentMessages = await db.select()
       .from(streamChat)
       .where(eq(streamChat.streamId, streamId))
-      .orderBy(desc(streamChat.createdAt))
+      .orderBy(desc(streamChat.created_at))
       .limit(50);
 
     for (const message of recentMessages.reverse()) {
-      controller.enqueue(new TextEncoder().encode(`data: ${JSON.stringify(message)}\n\n`));
+      const data = { created_at: message.created_at, stream_id: streamId, ...message };
+      controller.enqueue(new TextEncoder().encode(`data: ${JSON.stringify(data)}\n\n`));
     }
 
     // Keep connection alive with periodic heartbeat
@@ -36,25 +37,25 @@ export async function GET(request: Request, { params }: { params: { id: string }
   });
 }
 
-export async function POST(request: Request, { params }: { params: { id: string } }) {
+async function postChat({ params }: { params: { id: string } }) {
   try {
     const streamId = parseInt(params.id);
     const body = await request.json();
     
     const message = await db.insert(streamChat).values({
-      streamId,
-      userId: 'anonymous', // In a real app, this would come from auth
-      username: 'Anonymous User', // In a real app, this would come from auth
+      stream_id: streamId,
+      user_id: 1, // In a real app, this would come from auth
       message: body.message || '',
       type: body.type || 'text',
-      mediaUrl: body.mediaUrl,
+      media_url: body.mediaUrl,
     }).returning();
 
     // Broadcast to all connected clients
     const encoder = new TextEncoder();
     const stream = new ReadableStream({
       start(controller) {
-        controller.enqueue(encoder.encode(`data: ${JSON.stringify(message[0])}\n\n`));
+        const data = { ...message[0] };
+        controller.enqueue(encoder.encode(`data: ${JSON.stringify(data)}\n\n`));
         controller.close();
       },
     });
@@ -74,3 +75,5 @@ export async function POST(request: Request, { params }: { params: { id: string 
     );
   }
 }
+
+export { runtime, getChat, postChat };

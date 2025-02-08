@@ -4,7 +4,7 @@ import { marketplace } from '@/lib/schema';
 import { desc, eq } from 'drizzle-orm';
 import { createSSEStream } from '@/lib/utils';
 
-export async function GET() {
+export const marketplaceFunction = async () => {
   try {
     const listings = await db
       .select()
@@ -22,16 +22,15 @@ export async function GET() {
   }
 }
 
-export async function POST(request: Request) {
+export const marketplaceFunctionPost = async (request: Request) => {
   try {
     const body = await request.json();
     const listing = await db.insert(marketplace).values({
       title: body.title,
       description: body.description,
       price: body.price,
-      imageUrl: body.imageUrl,
-      authorId: 'anonymous', // In a real app, this would come from auth
-      authorName: body.authorName,
+      image_url: body.imageUrl,
+      author_id: 1, // In a real app, this would come from auth
       status: 'active',
     }).returning();
 

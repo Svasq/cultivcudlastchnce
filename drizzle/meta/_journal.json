@@ -15,6 +15,34 @@
       "when": "1707334453000",
       "tag": "0001_feedback",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1738983676993,
+      "tag": "0002_true_spyke",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1739002340351,
+      "tag": "0003_right_ironclad",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1739005200625,
+      "tag": "0004_round_whiplash",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1739012734347,
+      "tag": "0005_shallow_peter_quill",
+      "breakpoints": true
     }
   ]
-} 
+}

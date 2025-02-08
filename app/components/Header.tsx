@@ -3,124 +3,130 @@
 import { useEffect, useState } from "react"
 import Link from "next/link"
 import { useRouter, usePathname } from "next/navigation"
-import {
-  NavigationMenu,
-  NavigationMenuItem,
-  NavigationMenuLink,
-  NavigationMenuList,
-  navigationMenuTriggerStyle,
-} from "@/components/ui/navigation-menu"
-import { ModeToggle } from "@/components/ui/mode-toggle"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
-import { Video, Users, MessageSquare, ShoppingBag, MessageCircle } from "lucide-react"
+import { getJWTPayload } from "@/lib/auth"
+
 const navigationItems = [
   {
-    name: "Live",
-    href: "/live",
-    icon: Video,
-    visitorAccess: true,
+    name: "Home",
+    href: "/",
   },
   {
     name: "Communities",
     href: "/communities",
-    icon: Users,
-    visitorAccess: true,
   },
   {
     name: "Forums",
     href: "/forums",
-    icon: MessageSquare,
-    visitorAccess: true,
   },
   {
     name: "Marketplace",
     href: "/marketplace",
-    icon: ShoppingBag,
-    visitorAccess: true,
   },
   {
-    name: "Feedback",
-    href: "/feedback",
-    icon: MessageCircle,
-    visitorAccess: true,
+    name: "Live",
+    href: "/live",
   },
 ]
 
 export function Header() {
-  const [user, setUser] = useState<{ email: string } | null>(null);
-  const router = useRouter();
-  const pathname = usePathname();
-  const isAuthenticated = false; // TODO: Replace with actual auth check
+  const pathname = usePathname()
+  const router = useRouter()
+  const [token, setToken] = useState<string | null>(null)
+  const [user, setUser] = useState<{ email: string; role: string } | null>(null)
 
   useEffect(() => {
-    const storedUser = localStorage.getItem("user")
-    if (storedUser) {
-      setUser(JSON.parse(storedUser))
+    // Check for JWT token and user data on component mount
+    const storedToken = localStorage.getItem('jwt')
+    setToken(storedToken)
+    
+    if (storedToken) {
+      fetch('/api/me', {
+        headers: {
+          Authorization: `Bearer ${storedToken}`
+        }
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.user) {
+          setUser(data.user)
+        }
+      })
+      .catch(() => {
+        // If token is invalid, clear it
+        localStorage.removeItem('jwt')
+        setToken(null)
+      })
     }
   }, [])
 
-  const handleSignOut = () => {
-    localStorage.removeItem("user")
+  const handleLogout = () => {
+    localStorage.removeItem('jwt')
+    setToken(null)
     setUser(null)
-    router.push("/")
+    router.push('/auth/signin')
   }
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <nav className="container flex h-14 items-center">
-        <Link href="/" className="mr-6 flex items-center space-x-2">
-          <span className="font-bold">Community</span>
-        </Link>
-
-        <NavigationMenu>
-          <NavigationMenuList className="flex gap-2">
-            {navigationItems.map((item) => {
-              if (!item.visitorAccess && !isAuthenticated) return null
-
-              const isActive = pathname === item.href
-              const Icon = item.icon
-
-              return (
-                <NavigationMenuItem key={item.href}>
-                  <Link href={item.href} passHref legacyBehavior>
-                    <NavigationMenuLink asChild>
-                      <Button
-                        variant={isActive ? "secondary" : "ghost"}
-                        className={cn(
-                          "flex items-center gap-2",
-                          isActive && "bg-muted"
-                        )}
-                      >
-                        <Icon className="h-4 w-4" />
-                        {item.name}
-                      </Button>
-                    </NavigationMenuLink>
-                  </Link>
-                </NavigationMenuItem>
-              )
-            })}
-          </NavigationMenuList>
-        </NavigationMenu>
-
-        <div className="ml-auto flex items-center gap-2">
-          {!isAuthenticated ? (
+      <div className="container flex h-16 items-center justify-between">
+        <div className="flex items-center gap-8">
+          <Link href="/" className="flex items-center space-x-2">
+            <span className="text-xl font-bold">CultivarGente</span>
+          </Link>
+          <nav className="flex items-center space-x-6">
+            {navigationItems.map((item) => (
+              <Link
+                key={item.href}
+                href={item.href}
+                className={cn(
+                  "text-sm font-medium transition-colors hover:text-primary px-2 py-1 rounded-md",
+                  pathname === item.href
+                    ? "text-primary font-semibold bg-secondary"
+                    : "text-muted-foreground"
+                )}
+              >
+                {item.name}
+              </Link>
+            ))}
+          </nav>
+        </div>
+        <div className="flex items-center gap-4">
+          {!token ? (
             <>
-              <Button variant="ghost" asChild>
-                <Link href="/auth/signin">Login</Link>
-              </Button>
-              <Button asChild>
-                <Link href="/auth/signup">Sign Up</Link>
-              </Button>
+              <Link href="/auth/signin">
+                <Button variant="ghost" size="sm">
+                  Login
+                </Button>
+              </Link>
+              <Link href="/auth/signup">
+                <Button size="sm">
+                  Sign Up
+                </Button>
+              </Link>
             </>
           ) : (
-            <Button variant="ghost" asChild>
-              <Link href="/dashboard">Dashboard</Link>
-            </Button>
+            <>
+              <Link href="/dashboard">
+                <Button variant="ghost" size="sm">
+                  Dashboard
+                </Button>
+              </Link>
+              {user?.role === 'admin' && (
+                <Link href="/admin">
+                  <Button variant="ghost" size="sm">
+                    Admin
+                  </Button>
+                </Link>
+              )}
+              <Button variant="ghost" size="sm" onClick={handleLogout}>
+                Logout
+              </Button>
+            </>
           )}
-          <ModeToggle />
         </div>
-      </nav>
+      </div>
     </header>
   )
 }

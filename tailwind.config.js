@@ -18,11 +18,11 @@ module.exports = {
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
         primary: {
-          DEFAULT: "hsl(var(--primary))",
+          DEFAULT: "hsl(260 100% 60%)",
           foreground: "hsl(var(--primary-foreground))",
         },
         secondary: {
-          DEFAULT: "hsl(var(--secondary))",
+          DEFAULT: "hsl(220 100% 70%)",
           foreground: "hsl(var(--secondary-foreground))",
         },
         destructive: {
@@ -30,7 +30,7 @@ module.exports = {
           foreground: "hsl(var(--destructive-foreground))",
         },
         muted: {
-          DEFAULT: "hsl(var(--muted))",
+          DEFAULT: "hsl(0 0% 95%)",
           foreground: "hsl(var(--muted-foreground))",
         },
         accent: {
@@ -69,4 +69,3 @@ module.exports = {
   },
   plugins: [require("tailwindcss-animate")],
 }
-

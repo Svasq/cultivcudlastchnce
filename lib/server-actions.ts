@@ -2,7 +2,7 @@
 
 import { z } from 'zod';
 import { db } from '@/lib/db';
-import { feedback, marketplace, members, streams, admins } from '@/lib/schema';
+import { marketplace, streams, admins, feedbackTable, membersTable } from '@/lib/schema';
 import { revalidatePath } from 'next/cache';
 import { InferModel } from 'drizzle-orm';
 import { nanoid } from 'nanoid';
@@ -26,7 +26,8 @@ const marketplaceSchema = z.object({
 
 const streamSchema = z.object({
   title: z.string().min(3, 'Title must be at least 3 characters'),
-  communityId: z.number(),
+  community_id: z.number(),
+  user_id: z.number().optional(),
 });
 
 const adminLoginSchema = z.object({
@@ -59,40 +60,15 @@ export async function submitFeedback(values: z.infer<typeof feedbackSchema>) {
   }
 
   try {
-    await db.insert(feedback).values({
-      name: validatedFields.data.name,
-      email: validatedFields.data.email,
-      message: validatedFields.data.message,
-      createdAt: new Date(),
+    await db.insert(feedbackTable).values({
+      user_id: 1, // hardcoded user id for now
+      feedback_text: validatedFields.data.message,
     });
     
     return { success: true };
   } catch (error) {
     console.error('Failed to submit feedback:', error);
     throw new Error('Failed to submit feedback');
-  }
-}
-
-export async function handleCreatePost(formData: FormData) {
-  try {
-    const title = formData.get("title");
-    const content = formData.get("content");
-    
-    if (!title || !content) {
-      return { error: "Title and content are required" };
-    }
-
-    if (typeof title === 'string' && typeof content === 'string') {
-      const post = await db.insert(members)
-        .values({ title, content })
-        .returning({ id: members.id });
-        
-      revalidatePath('/');
-      return { success: true, postId: post[0].id };
-    }
-  } catch (error) {
-    console.error('Error creating post:', error);
-    return { error: "Failed to create post. Please try again." };
   }
 }
 
@@ -107,10 +83,9 @@ export async function createListing(values: z.infer<typeof marketplaceSchema>) {
     const listing = await db.insert(marketplace).values({
       title: validatedFields.data.title,
       description: validatedFields.data.description,
-      price: validatedFields.data.price.toString(),
-      imageUrl: validatedFields.data.imageUrl,
-      authorId: 'anonymous',
-      authorName: validatedFields.data.authorName,
+      price: validatedFields.data.price,
+      image_url: validatedFields.data.imageUrl,
+      author_id: '1',
       status: 'active',
     }).returning();
 
@@ -133,8 +108,9 @@ export async function startStream(values: z.infer<typeof streamSchema>) {
     const streamKey = nanoid();
     const stream = await db.insert(streams).values({
       title: validatedFields.data.title,
-      communityId: validatedFields.data.communityId,
-      streamKey,
+      community_id: validatedFields.data.community_id,
+      user_id: 1, // hardcoded user id for now
+      stream_key: streamKey,
       status: 'active',
     }).returning();
 
@@ -159,7 +135,7 @@ export async function createAdmin(values: z.infer<typeof adminCreateSchema>) {
 
     const admin = await db.insert(admins).values({
       email: validatedFields.data.email,
-      hashedPassword: `${salt}:${hashedPassword}`,
+      hashed_password: `${salt}:${hashedPassword}`,
       name: validatedFields.data.name,
       role: 'admin',
     }).returning();
@@ -188,21 +164,18 @@ export async function adminLogin(values: z.infer<typeof adminLoginSchema>) {
       throw new Error('Invalid credentials');
     }
 
-    const [salt, storedHash] = admin[0].hashedPassword.split(':');
+    const [salt, storedHash] = admin[0].hashed_password.split(':');
     const hash = hashPassword(validatedFields.data.password, salt);
 
     if (hash !== storedHash) {
       throw new Error('Invalid credentials');
     }
 
-    // Update last login
-    await db.update(admins)
-      .set({ lastLogin: new Date() })
-      .where(eq(admins.id, admin[0].id));
 
     // Set session cookie
     const session = {
       id: admin[0].id,
+      name: admin[0].name,
       email: admin[0].email,
       role: admin[0].role,
     };
@@ -232,4 +205,31 @@ export async function adminLogout() {
   const cookieStore = cookies();
   await cookieStore.delete('admin_session');
   return { success: true };
+}
+
+export async function handleCreatePost(formData: FormData) {
+  try {
+    const title = formData.get("title");
+    const content = formData.get("content");
+    
+    if (!title || !content) {
+      return { error: "Title and content are required" };
+    }
+
+    if (typeof title === 'string' && typeof content === 'string') {
+      const post = await db.insert(membersTable)
+        .values({
+          title: title,
+          content: content,
+          author_id: 1, // hardcoded user id for now
+        })
+        .returning({ id: membersTable.id });
+
+      revalidatePath('/');
+      return { success: true, postId: post[0].id };
+    }
+  } catch (error) {
+    console.error('Error creating post:', error);
+    return { error: "Failed to create post. Please try again." };
+  }
 }

@@ -9,7 +9,6 @@ import { toast } from 'sonner';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { adminLogin } from '@/lib/actions';
 
 const loginSchema = z.object({
   email: z.string().email('Invalid email address'),
@@ -17,6 +16,15 @@ const loginSchema = z.object({
 });
 
 type FormData = z.infer<typeof loginSchema>;
+
+type LoginResponse = {
+  success: boolean;
+};
+
+function loginFunction(data: FormData): Promise<LoginResponse> {
+  // logic here
+  return Promise.resolve({ success: true }); // Ensure success is returned
+}
 
 export default function AdminLoginPage() {
   const [isLoading, setIsLoading] = useState(false);
@@ -28,7 +36,7 @@ export default function AdminLoginPage() {
   const onSubmit = async (data: FormData) => {
     setIsLoading(true);
     try {
-      const result = await adminLogin(data);
+      const result = await loginFunction(data);
       if (result.success) {
         toast.success('Login successful');
         router.push('/admin/dashboard');

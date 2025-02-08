@@ -22,9 +22,7 @@ interface LiveChatProps {
 }
 
 export function LiveChat({ streamId }: LiveChatProps) {
-  const [messages, addMessage] = useOptimistic<ChatMessage[]>([], 
-    (state, newMessage: ChatMessage) => [...state, newMessage]
-  );
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [message, setMessage] = useState('');
   const [isUploading, setIsUploading] = useState(false);
   const chatEndRef = useRef<HTMLDivElement>(null);
@@ -36,7 +34,7 @@ export function LiveChat({ streamId }: LiveChatProps) {
     events.onmessage = (event) => {
       if (event.data === 'connected' || event.data === 'heartbeat') return;
       const data = JSON.parse(event.data);
-      addMessage(data);
+      setMessages((prevMessages) => [...prevMessages, data]);
       scrollToBottom();
     };
 
