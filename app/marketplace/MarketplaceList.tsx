@@ -9,7 +9,7 @@ interface MarketplaceListing {
   title: string;
   description: string;
   price: number;
-  imageUrl?: string;
+  imageUrl?: string | null;
   authorName: string;
   createdAt: string;
   status: string;
@@ -72,10 +72,10 @@ export function MarketplaceList({ initialListings }: Props) {
           </CardContent>
           <CardFooter className="flex justify-between text-sm text-muted-foreground">
             <div className="truncate">Listed by {listing.authorName}</div>
-            <div>{formatDistanceToNow(new Date(listing.createdAt))} ago</div>
+            <div>{new Date(listing.createdAt).toISOString().split('T')[0]}</div>
           </CardFooter>
         </Card>
       ))}
     </div>
   );
-} 
+}

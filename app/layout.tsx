@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { Toaster } from 'sonner'
 import './globals.css'
 import React from 'react';
+import { ThemeProvider } from "@/components/theme-provider"
 
 export const metadata: Metadata = {
   title: 'Community Website',
@@ -15,10 +16,18 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body>{children}
-        <div suppressHydrationWarning>
-          <Toaster position="top-right" />
-        </div>
+      <body>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+          {children}
+          <div suppressHydrationWarning>
+            <Toaster position="top-right" />
+          </div>
+        </ThemeProvider>
       </body>
     </html>
   )

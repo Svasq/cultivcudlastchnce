@@ -1,10 +1,15 @@
-"use client";
-
+import { Header } from '../components/Header';
+import { Footer } from '../components/Footer';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { useState, useEffect } from 'react';
 
 interface Thread {
   id: number;
   title: string;
+  body: string;
   authorId: number;
   createdAt: string;
   updatedAt: string;
@@ -55,23 +60,43 @@ export default function ForumsPage() {
   };
 
   return (
-    <div>
-      <h1>Forums</h1>
-      <form onSubmit={handleCreateThread}>
-        <input
-          type="text"
-          placeholder="Thread title"
-          value={newThreadTitle}
-          onChange={(e) => setNewThreadTitle(e.target.value)}
-        />
-        <button type="submit">Create Thread</button>
-      </form>
-      <h2>Threads</h2>
-      <ul>
-        {threads.map((thread) => (
-          <li key={thread.id}>{thread.title}</li>
-        ))}
-      </ul>
+    <div className="flex flex-col min-h-screen">
+      <Header />
+      <main className="flex-grow container mx-auto px-4 py-12">
+        <h1 className="text-3xl font-bold mb-4">Forums</h1>
+        <Card className="mb-6">
+          <CardHeader>
+            <CardTitle>Create New Thread</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleCreateThread} className="space-y-4">
+              <Input
+                type="text"
+                placeholder="Thread title"
+                value={newThreadTitle}
+                onChange={(e) => setNewThreadTitle(e.target.value)}
+              />
+              <Button type="submit">Create Thread</Button>
+            </form>
+          </CardContent>
+        </Card>
+
+        <h2 className="text-2xl font-bold mb-4">Threads</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {threads.map((thread) => (
+            <Card key={thread.id}>
+              <CardHeader>
+                <CardTitle>{thread.title}</CardTitle>
+              </CardHeader>
+              <CardContent>
+                {/* Add more thread details here, like author and date */}
+                <p>Created at: {thread.createdAt}</p>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </main>
+      <Footer />
     </div>
   );
 }

@@ -73,3 +73,14 @@ export const streamChat = pgTable("stream_chat", {
   mediaUrl: text("media_url"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
+
+export const admins = pgTable("admins", {
+  id: serial("id").primaryKey(),
+  email: text("email").notNull().unique(),
+  hashedPassword: text("hashed_password").notNull(),
+  name: text("name").notNull(),
+  role: text("role").notNull().default('admin'),
+  lastLogin: timestamp("last_login"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});

@@ -1,14 +1,15 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { marketplace } from '@/lib/schema';
-import { desc } from 'drizzle-orm';
+import { desc, eq } from 'drizzle-orm';
+import { createSSEStream } from '@/lib/utils';
 
 export async function GET() {
   try {
     const listings = await db
       .select()
       .from(marketplace)
-      .where(marketplace.status.eq('active'))
+      .where(eq(marketplace.status, 'active'))
       .orderBy(desc(marketplace.createdAt));
 
     return NextResponse.json(listings);
@@ -35,20 +36,9 @@ export async function POST(request: Request) {
     }).returning();
 
     // Notify connected clients about the new listing
-    const encoder = new TextEncoder();
-    const stream = new ReadableStream({
-      start(controller) {
-        controller.enqueue(encoder.encode(`data: ${JSON.stringify(listing[0])}\n\n`));
-        controller.close();
-      },
-    });
-
-    return new NextResponse(stream, {
-      headers: {
-        'Content-Type': 'text/event-stream',
-        'Cache-Control': 'no-cache',
-        'Connection': 'keep-alive',
-      },
+    return createSSEStream(async (controller) => {
+      controller.enqueue(new TextEncoder().encode(`data: ${JSON.stringify(listing[0])}\n\n`));
+      controller.close();
     });
   } catch (error) {
     console.error('Error creating listing:', error);
@@ -57,4 +47,4 @@ export async function POST(request: Request) {
       { status: 500 }
     );
   }
-} 
+}

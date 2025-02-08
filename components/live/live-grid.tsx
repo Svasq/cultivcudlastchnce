@@ -10,6 +10,7 @@ interface Stream {
   id: number;
   title: string;
   communityId: number;
+  communityName: string;
   status: string;
   viewerCount: number;
   thumbnailUrl?: string;
@@ -63,6 +64,9 @@ export function LiveGrid({ initialStreams }: LiveGridProps) {
             </div>
             <CardHeader>
               <CardTitle className="line-clamp-1">{stream.title}</CardTitle>
+              <p className="text-sm text-muted-foreground">
+                {stream.communityName}
+              </p>
             </CardHeader>
             <CardFooter className="text-sm text-muted-foreground">
               Started {formatDistanceToNow(new Date(stream.createdAt))} ago

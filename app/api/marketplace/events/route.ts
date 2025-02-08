@@ -1,31 +1,21 @@
 import { NextResponse } from 'next/server';
+import { createSSEStream } from '@/lib/utils';
 
 export const runtime = 'edge';
 
 export async function GET() {
-  const encoder = new TextEncoder();
-  const stream = new ReadableStream({
-    start(controller) {
-      // Send initial connection message
-      controller.enqueue(encoder.encode('data: connected\n\n'));
-      
-      // Keep connection alive with periodic heartbeat
-      const heartbeat = setInterval(() => {
-        controller.enqueue(encoder.encode('data: heartbeat\n\n'));
-      }, 30000);
+  return createSSEStream(async (controller) => {
+    // Send initial connection message
+    controller.enqueue(new TextEncoder().encode('data: connected\n\n'));
 
-      // Clean up on close
-      return () => {
-        clearInterval(heartbeat);
-      };
-    },
-  });
+    // Keep connection alive with periodic heartbeat
+    const heartbeat = setInterval(() => {
+      controller.enqueue(new TextEncoder().encode('data: heartbeat\n\n'));
+    }, 30000);
 
-  return new NextResponse(stream, {
-    headers: {
-      'Content-Type': 'text/event-stream',
-      'Cache-Control': 'no-cache',
-      'Connection': 'keep-alive',
-    },
+    // Clean up on close
+    return () => {
+      clearInterval(heartbeat);
+    };
   });
-} 
+}

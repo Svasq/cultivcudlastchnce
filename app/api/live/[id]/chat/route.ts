@@ -1,48 +1,38 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { streamChat } from '@/lib/schema';
-import { desc } from 'drizzle-orm';
+import { desc, eq } from 'drizzle-orm';
+import { createSSEStream } from '@/lib/utils';
 
 export const runtime = 'edge';
 
 export async function GET(request: Request, { params }: { params: { id: string } }) {
   const streamId = parseInt(params.id);
-  const encoder = new TextEncoder();
 
-  const stream = new ReadableStream({
-    async start(controller) {
-      // Send initial connection message
-      controller.enqueue(encoder.encode('data: connected\n\n'));
+  return createSSEStream(async (controller) => {
+    // Send initial connection message
+    controller.enqueue(new TextEncoder().encode('data: connected\n\n'));
 
-      // Send recent messages
-      const recentMessages = await db.select()
-        .from(streamChat)
-        .where(streamChat.streamId.eq(streamId))
-        .orderBy(desc(streamChat.createdAt))
-        .limit(50);
+    // Send recent messages
+    const recentMessages = await db.select()
+      .from(streamChat)
+      .where(eq(streamChat.streamId, streamId))
+      .orderBy(desc(streamChat.createdAt))
+      .limit(50);
 
-      for (const message of recentMessages.reverse()) {
-        controller.enqueue(encoder.encode(`data: ${JSON.stringify(message)}\n\n`));
-      }
+    for (const message of recentMessages.reverse()) {
+      controller.enqueue(new TextEncoder().encode(`data: ${JSON.stringify(message)}\n\n`));
+    }
 
-      // Keep connection alive with periodic heartbeat
-      const heartbeat = setInterval(() => {
-        controller.enqueue(encoder.encode('data: heartbeat\n\n'));
-      }, 30000);
+    // Keep connection alive with periodic heartbeat
+    const heartbeat = setInterval(() => {
+      controller.enqueue(new TextEncoder().encode('data: heartbeat\n\n'));
+    }, 30000);
 
-      // Clean up on close
-      return () => {
-        clearInterval(heartbeat);
-      };
-    },
-  });
-
-  return new NextResponse(stream, {
-    headers: {
-      'Content-Type': 'text/event-stream',
-      'Cache-Control': 'no-cache',
-      'Connection': 'keep-alive',
-    },
+    // Clean up on close
+    return () => {
+      clearInterval(heartbeat);
+    };
   });
 }
 
@@ -83,4 +73,4 @@ export async function POST(request: Request, { params }: { params: { id: string 
       { status: 500 }
     );
   }
-} 
+}
