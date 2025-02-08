@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { db } from '@/lib/db';
-import { feedback, marketplace } from '@/lib/schema';
+import { feedback, marketplace, communities } from '@/lib/schema';
 import { revalidatePath } from 'next/cache';
 import { members } from '@/lib/schema';
 import { InferModel } from 'drizzle-orm';
@@ -19,6 +19,11 @@ const marketplaceSchema = z.object({
   price: z.number().positive('Price must be a positive number'),
   imageUrl: z.string().optional(),
   authorName: z.string().min(2, 'Name must be at least 2 characters'),
+});
+
+const communitySchema = z.object({
+  name: z.string().min(3, 'Name must be at least 3 characters'),
+  bio: z.string().min(10, 'Bio must be at least 10 characters'),
 });
 
 export async function submitFeedback(values: z.infer<typeof feedbackSchema>) {
@@ -94,5 +99,28 @@ export async function createListing(values: z.infer<typeof marketplaceSchema>) {
   } catch (error) {
     console.error('Failed to create listing:', error);
     throw new Error('Failed to create listing');
+  }
+}
+
+export async function createCommunity(values: z.infer<typeof communitySchema>) {
+  'use server';
+
+  const validatedFields = communitySchema.safeParse(values);
+  
+  if (!validatedFields.success) {
+    throw new Error('Invalid community data');
+  }
+
+  try {
+    const community = await db.insert(communities).values({
+      name: validatedFields.data.name,
+      bio: validatedFields.data.bio,
+    }).returning();
+
+    revalidatePath('/communities');
+    return { success: true, data: community[0] };
+  } catch (error) {
+    console.error('Failed to create community:', error);
+    throw new Error('Failed to create community');
   }
 }
