@@ -1,33 +1,45 @@
-import { Suspense } from 'react';
-import { db } from '@/lib/db';
-import { communities } from '@/lib/schema';
-import { desc } from 'drizzle-orm';
-import { CreateCommunity } from '@/components/create-community';
-import { CommunityList } from '@/components/community-list';
+"use client";
 
-async function getInitialCommunities() {
-  return await db.query.communities.findMany({
-    orderBy: [desc(communities.createdAt)],
-  });
+import { useState, useEffect } from 'react';
+
+interface Community {
+  id: number;
+  name: string;
+  bio: string;
 }
 
-export default async function CommunitiesPage() {
-  const initialCommunities = await getInitialCommunities();
+export default function CommunitiesPage() {
+  const [communities, setCommunities] = useState<Community[]>([]);
+
+  useEffect(() => {
+    fetchCommunities();
+  }, []);
+
+  const fetchCommunities = async () => {
+    try {
+      const response = await fetch('/api/communities');
+      const data = await response.json();
+      if (Array.isArray(data)) {
+        setCommunities(data);
+      } else {
+        console.error('Data is not an array:', data);
+      }
+    } catch (error) {
+      console.error('Error fetching communities:', error);
+    }
+  };
 
   return (
-    <div className="container py-6 space-y-8">
-      <div className="flex flex-col gap-4">
-        <h1 className="text-4xl font-bold">Communities</h1>
-        <p className="text-muted-foreground">
-          Join existing communities or create your own to connect with like-minded people.
-        </p>
-      </div>
-
-      <CreateCommunity />
-
-      <Suspense fallback={<div>Loading communities...</div>}>
-        <CommunityList initialCommunities={initialCommunities} />
-      </Suspense>
+    <div>
+      <h1>Communities</h1>
+      <ul>
+        {communities.map((community) => (
+          <li key={community.id}>
+            <h2>{community.name}</h2>
+            <p>{community.bio}</p>
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }
